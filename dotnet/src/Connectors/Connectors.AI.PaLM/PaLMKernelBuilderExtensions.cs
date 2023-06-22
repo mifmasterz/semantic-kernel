@@ -58,14 +58,14 @@ public static class PaLMKernelBuilderExtensions
     /// <returns>The <see cref="KernelBuilder"/> instance.</returns>
     public static KernelBuilder WithPaLMTextEmbeddingGenerationService(this KernelBuilder builder,
         string model,        
-        string ApiKey,
+        string apiKey,
         string? serviceId = null,
         bool setAsDefault = false)
     {
         builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (parameters) =>
             new PaLMTextEmbeddingGeneration(
                 model,
-                apiKey:ApiKey));
+                apiKey:apiKey));
 
         return builder;
     }

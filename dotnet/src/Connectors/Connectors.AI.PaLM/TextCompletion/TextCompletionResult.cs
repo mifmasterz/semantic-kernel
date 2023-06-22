@@ -23,7 +23,7 @@ internal sealed class TextCompletionStreamingResult : ITextStreamingResult
 
     public Task<string> GetCompletionAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(this._responseData.GetResult<TextCompletionResponse>().candidates.First().output ?? string.Empty);
+        return Task.FromResult(this._responseData.GetResult<TextCompletionResponse>().Candidates.First().Output ?? string.Empty);
     }
 
     public async IAsyncEnumerable<string> GetCompletionStreamingAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)

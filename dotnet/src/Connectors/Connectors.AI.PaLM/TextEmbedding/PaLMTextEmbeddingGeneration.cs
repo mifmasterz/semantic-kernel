@@ -16,7 +16,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.PaLM.TextEmbedding;
 /// <summary>
 /// PaLM embedding generation service.
 /// </summary>
-public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration, IDisposable
+public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration
 {
     private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
 
@@ -26,23 +26,7 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration, IDis
     private readonly bool _disposeHttpClient = true;
     private readonly string? _apiKey;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PaLMTextEmbeddingGeneration"/> class.
-    /// </summary>
-    /// <param name="endpoint">Endpoint for service API call.</param>
-    /// <param name="model">Model to use for service API call.</param>
-    /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
-    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
-    public PaLMTextEmbeddingGeneration(Uri endpoint, string apiKey, string model, HttpClientHandler httpClientHandler)
-    {
-        Verify.NotNull(endpoint);
-        Verify.NotNullOrWhiteSpace(model);
 
-        this._endpoint = endpoint.AbsoluteUri;
-        this._model = model;
-        this._apiKey = apiKey;
-        this._httpClient = new(httpClientHandler);
-    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PaLMTextEmbeddingGeneration"/> class.
@@ -50,7 +34,9 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration, IDis
     /// </summary>
     /// <param name="endpoint">Endpoint for service API call.</param>
     /// <param name="model">Model to use for service API call.</param>
-    public PaLMTextEmbeddingGeneration(Uri endpoint, string model, string apiKey)
+    /// <param name="apiKey">PaLM API KEY to use for service API call.</param>
+    /// <param name="httpClient">instance of http client if already exist</param>
+    public PaLMTextEmbeddingGeneration(Uri endpoint, string model, string apiKey, HttpClient? httpClient = null)
     {
         Verify.NotNull(endpoint);
         Verify.NotNullOrWhiteSpace(model);
@@ -58,7 +44,7 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration, IDis
         this._endpoint = endpoint.AbsoluteUri;
         this._model = model;
         this._apiKey = apiKey;
-        this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+        this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._disposeHttpClient = false; // Disposal is unnecessary as we either use a non-disposable handler or utilize a custom HTTP client that we should not dispose.
     }
 
@@ -110,15 +96,7 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration, IDis
         return await this.ExecuteEmbeddingRequestAsync(data, cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
-    public void Dispose()
-    {
-        if (this._disposeHttpClient)
-        {
-            this._httpClient.Dispose();
-        }
-    }
+    
 
     #region private ================================================================================
 

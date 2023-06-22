@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -16,7 +17,7 @@ namespace Microsoft.SemanticKernel.Connectors.AI.PaLM.TextCompletion;
 /// <summary>
 /// PaLM text completion service.
 /// </summary>
-public sealed class PaLMTextCompletion : ITextCompletion, IDisposable
+public sealed class PaLMTextCompletion : ITextCompletion
 {
     private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
     private const string PaLMApiEndpoint = "https://generativelanguage.googleapis.com/v1beta2/models";
@@ -26,24 +27,6 @@ public sealed class PaLMTextCompletion : ITextCompletion, IDisposable
     private readonly HttpClient _httpClient;
     private readonly bool _disposeHttpClient = true;
     private readonly string? _apiKey;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PaLMTextCompletion"/> class.
-    /// </summary>
-    /// <param name="endpoint">Endpoint for service API call.</param>
-    /// <param name="model">Model to use for service API call.</param>
-    /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
-    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
-    public PaLMTextCompletion(Uri endpoint, string model, HttpClientHandler httpClientHandler)
-    {
-        Verify.NotNull(endpoint);
-        Verify.NotNullOrWhiteSpace(model);
-
-        this._endpoint = endpoint.AbsoluteUri;
-        this._model = model;
-
-        this._httpClient = new(httpClientHandler);
-    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PaLMTextCompletion"/> class.
@@ -61,38 +44,6 @@ public sealed class PaLMTextCompletion : ITextCompletion, IDisposable
 
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._disposeHttpClient = false; // Disposal is unnecessary as a non-disposable handler is used.
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PaLMTextCompletion"/> class.
-    /// Using PaLM API for service call, see https://developers.generativeai.google/guide/palm_api_overview.
-    /// </summary>
-    /// <param name="apiKey">PaLM API key, see https://developers.generativeai.google/tutorials/setup.</param>
-    /// <param name="model">Model to use for service API call.</param>
-    /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
-    /// <param name="endpoint">Endpoint for service API call.</param>
-    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
-    public PaLMTextCompletion(string apiKey, string model, HttpClientHandler httpClientHandler, string endpoint = PaLMApiEndpoint)
-        : this(new Uri(endpoint), model, httpClientHandler)
-    {
-        Verify.NotNullOrWhiteSpace(apiKey);
-        this._apiKey = apiKey;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PaLMTextCompletion"/> class.
-    /// Using PaLM API for service call, see https://developers.generativeai.google/guide/palm_api_overview.
-    /// Using default <see cref="HttpClientHandler"/> implementation.
-    /// </summary>
-    /// <param name="apiKey">PaLM API key, see https://developers.generativeai.google/tutorials/setup.</param>
-    /// <param name="model">Model to use for service API call.</param>
-    /// <param name="endpoint">Endpoint for service API call.</param>
-    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
-    public PaLMTextCompletion(string apiKey, string model, string endpoint = PaLMApiEndpoint)
-        : this(new Uri(endpoint), model)
-    {
-        Verify.NotNullOrWhiteSpace(apiKey);
-        this._apiKey = apiKey;
     }
 
     /// <summary>
@@ -136,16 +87,6 @@ public sealed class PaLMTextCompletion : ITextCompletion, IDisposable
         return await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
-    public void Dispose()
-    {
-        if (this._disposeHttpClient)
-        {
-            this._httpClient.Dispose();
-        }
-    }
-
     #region private ================================================================================
 
     private async Task<IReadOnlyList<ITextStreamingResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
@@ -153,7 +94,7 @@ public sealed class PaLMTextCompletion : ITextCompletion, IDisposable
         try
         {
             var completionRequest = new TextCompletionRequest();
-            completionRequest.prompt.text = text;
+            completionRequest.Prompt.Text = text;
 
             using var httpRequestMessage = new HttpRequestMessage()
             {
@@ -163,12 +104,7 @@ public sealed class PaLMTextCompletion : ITextCompletion, IDisposable
             };
 
             httpRequestMessage.Headers.Add("User-Agent", HttpUserAgent);
-            
-            //if (!string.IsNullOrEmpty(this._apiKey))
-            //{
-            //    httpRequestMessage.Headers.Add("Authorization", $"Bearer {this._apiKey}");
-            //}
-
+           
             using var response = await this._httpClient.SendAsync(httpRequestMessage, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
@@ -184,15 +120,17 @@ public sealed class PaLMTextCompletion : ITextCompletion, IDisposable
                 };
             }
 
-            if (completionResponse.candidates is null)
+            //note: if PaLM refuse to answer it will response with different json schema, without any candidates
+            if (completionResponse.Candidates is null)
             {
-                completionResponse = new TextCompletionResponse() { candidates = new Candidate[] { new Candidate() { output = "response is null, please try another input." } } };
+                var errorResponse = JsonSerializer.Deserialize<TextCompletionError>(body);
+                completionResponse = new TextCompletionResponse() { Candidates = new Candidate[] { new Candidate() { Output = $"response is null, reason: {errorResponse?.Filters.First()?.Reason}, please try another input." } } };
             }
 
             //return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c));
             return new List<ITextStreamingResult>() { new TextCompletionStreamingResult(completionResponse) };
         }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
+        catch (Exception e) when (!e.IsCriticalException())
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,

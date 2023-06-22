@@ -14,18 +14,25 @@ public sealed class TextCompletionRequest
     ///// <summary>
     ///// Prompt to complete.
     ///// </summary>
-    //[JsonPropertyName("inputs")]
-    //public string Input { get; set; } = string.Empty;
-    public Prompt prompt { get; set; } = new();
-    public float temperature { get; set; } = 0.1f;
-    public float top_p { get; set; } = 0.95f;
-    public int candidate_count { get; set; } = 3;
-    public int top_k { get; set; } = 40;
-    public int max_output_tokens { get; set; } = 2048;
-    public string[] stop_sequences { get; set; } = Array.Empty<string>();
+
+    [JsonPropertyName("prompt")]
+    public Prompt Prompt { get; set; } = new();
+    [JsonPropertyName("temperature")]
+    public float Temperature { get; set; } = 0.1f;
+    [JsonPropertyName("top_p")]
+    public float TopP { get; set; } = 0.95f;
+    [JsonPropertyName("candidate_count")]
+    public int CandidateCount { get; set; } = 3;
+    [JsonPropertyName("top_k")]
+    public int TopK { get; set; } = 40;
+    [JsonPropertyName("max_output_tokens")]
+    public int MaxOutputTokens { get; set; } = 2048;
+    [JsonPropertyName("stop_sequences")]
+    public string[] StopSequences { get; set; } = Array.Empty<string>();
 }
 
 public class Prompt
 {
-    public string text { get; set; } = string.Empty;
+    [JsonPropertyName("text")]
+    public string Text { get; set; } = string.Empty;
 }

@@ -4,7 +4,6 @@ using System.ComponentModel;
 using Microsoft.SemanticKernel.AI;
 using System.Net.Http;
 using Microsoft.SemanticKernel.Diagnostics;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,20 +14,26 @@ namespace Connectors.AI.PaLM.Skills
     {
         private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
 
-        private readonly string _model = "chat-bison-001";
+        private readonly string _model;
         private readonly string? _endpoint = "https://generativelanguage.googleapis.com/v1beta2/models";
         private readonly HttpClient _httpClient;
         private readonly bool _disposeHttpClient = true;
         private readonly string? _apiKey;
 
-        public TokenSkill(string model, string apiKey)
+        /// <summary>
+        /// Initializes a new instance of the Token Skill
+        /// </summary>
+        /// <param name="model">Model to use</param>
+        /// <param name="apiKey">PaLM API Key</param>
+        /// <param name="httpClient">instance of http client if already exist</param>
+        public TokenSkill(string model, string apiKey, HttpClient? httpClient = null)
         {
             Verify.NotNullOrWhiteSpace(model);
             Verify.NotNullOrWhiteSpace(apiKey);
 
             this._model = model;
             this._apiKey = apiKey;
-            this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
+            this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
             this._disposeHttpClient = false; // Disposal is unnecessary as we either use a non-disposable handler or utilize a custom HTTP client that we should not dispose.
         }
         /// <summary>
@@ -48,7 +53,7 @@ namespace Connectors.AI.PaLM.Skills
                 CancellationTokenSource cts = new CancellationTokenSource();
                 var cancellationToken = cts.Token;
                 var tokenRequest = new TokenRequest();
-                tokenRequest.prompt.messages.Add(new Message1() { content = input });
+                tokenRequest.Prompt.Messages.Add(new MessageToken() { Content = input });
 
                 using var httpRequestMessage = new HttpRequestMessage()
                 {
@@ -64,7 +69,7 @@ namespace Connectors.AI.PaLM.Skills
 
                 var tokenResp = JsonSerializer.Deserialize<TokenResponse>(body);
 
-                return tokenResp.tokenCount;
+                return tokenResp.TokenCount;
             }
             catch (Exception e) when (e is not AIException && !e.IsCriticalException())
             {
@@ -106,29 +111,8 @@ namespace Connectors.AI.PaLM.Skills
                 url = $"{baseUrl!.TrimEnd('/')}/{this._model}:countMessageTokens";
             }
             return new Uri(url);
-            //return new Uri($"{baseUrl!.TrimEnd('/')}/{this._model}");
         }
     }
 
-    public class Message1
-    {
-        public string content { get; set; }
-    }
-
-    public class Prompt1
-    {
-        public List<Message1> messages { get; set; } = new();
-    }
-
-    public class TokenRequest
-    {
-        public Prompt1 prompt { get; set; } = new();
-    }
-
-    public class TokenResponse
-    {
-        public int tokenCount { get; set; }
-
-    }
 }
 

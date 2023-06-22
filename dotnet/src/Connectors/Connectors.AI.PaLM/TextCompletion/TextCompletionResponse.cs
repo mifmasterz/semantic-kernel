@@ -4,32 +4,24 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.PaLM.TextCompletion;
 
-/*
-/// <summary>
-/// HTTP Schema for completion response.
-/// </summary>
-public sealed class TextCompletionResponse
-{
-    /// <summary>
-    /// Completed text.
-    /// </summary>
-    [JsonPropertyName("generated_text")]
-    public string? Text { get; set; }
-}*/
-
 public class TextCompletionResponse
 {
-    public Candidate[] candidates { get; set; }
+    [JsonPropertyName("candidates")]
+    public Candidate[] Candidates { get; set; }
 }
 
 public class Candidate
 {
-    public string output { get; set; }
-    public Safetyrating[] safetyRatings { get; set; }
+    [JsonPropertyName("output")]
+    public string Output { get; set; }
+    [JsonPropertyName("safetyRatings")]
+    public Safetyrating[] SafetyRatings { get; set; }
 }
 
 public class Safetyrating
 {
-    public string category { get; set; }
-    public string probability { get; set; }
+    [JsonPropertyName("category")]
+    public string Category { get; set; }
+    [JsonPropertyName("probability")]
+    public string Probability { get; set; }
 }
