@@ -10,7 +10,8 @@ namespace TestPalmApi;
 
 internal class Program
 {
-    const string PALM_API_KEY = "AIzaSyBckgGXO_DcMSmoRnE7UHGTKvfO7GuDU_8";//"[PUT YOUR PALM API KEY HERE]";
+    //"[PUT YOUR PALM API KEY HERE]"; - please delete the key below after test ;D
+    const string PALM_API_KEY = "AIzaSyBckgGXO_DcMSmoRnE7UHGTKvfO7GuDU_8";
     const string Model = "text-bison-001";
     const string ModelEmbedding = "embedding-gecko-001";
     const string ModelToken = "chat-bison-001";
