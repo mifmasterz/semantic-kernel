@@ -132,7 +132,7 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration
 
             return new List<Embedding<float>>() { new Embedding<float>(embeddingResponse?.embedding.value) };
         }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
+        catch (Exception e) when (!e.IsCriticalException())
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,

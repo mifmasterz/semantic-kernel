@@ -1,22 +1,22 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Connectors.AI.PaLM.Skills;
-using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
+using Microsoft.SemanticKernel;
 using RepoUtils;
 
-namespace TestPalmApi;
-
-internal class Program
+internal static class Example49_PaLM
 {
-    //"[PUT YOUR PALM API KEY HERE]"; - please delete the key below after test ;D
-    const string PALM_API_KEY = "AIzaSyBckgGXO_DcMSmoRnE7UHGTKvfO7GuDU_8";
+    const string PALM_API_KEY = "[PUT YOUR PALM API KEY HERE]";
     const string Model = "text-bison-001";
     const string ModelEmbedding = "embedding-gecko-001";
     const string ModelToken = "chat-bison-001";
-    static async Task Main(string[] args)
-    {
+    public static async Task RunAsync()
+    {   
         //run text embedding
         await RunEmbedAsync();
 
@@ -32,7 +32,7 @@ internal class Program
     public static async Task RunTokenAsync()
     {
         var tokenskill = new TokenSkill(ModelToken, PALM_API_KEY);
-        var count = await tokenskill.CountToken("hello world, I like this.");
+        var count = await tokenskill.CountTokens("hello world, I like this.");
         Console.WriteLine($"count token: {count}");
     }
     public static async Task RunEmbedAsync()
@@ -129,12 +129,6 @@ internal class Program
                 Console.WriteLine("try another question..");
             }
 
-            /*
-            foreach (var modelResult in result.ModelResults)
-            {
-                var resp = modelResult.GetPaLMResult();
-                Console.WriteLine(resp.AsJson());
-            }*/
             if (question == "exit")
             {
 
@@ -153,10 +147,10 @@ internal class Program
             return history;
         }
     }
-}
 
-public class Chat
-{
-    public string Question { get; set; }
-    public string Answer { get; set; }
+    public class Chat
+    {
+        public string Question { get; set; }
+        public string Answer { get; set; }
+    }
 }

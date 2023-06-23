@@ -13,11 +13,9 @@ namespace Connectors.AI.PaLM.Skills
     public sealed class TokenSkill
     {
         private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
-
         private readonly string _model;
         private readonly string? _endpoint = "https://generativelanguage.googleapis.com/v1beta2/models";
         private readonly HttpClient _httpClient;
-        private readonly bool _disposeHttpClient = true;
         private readonly string? _apiKey;
 
         /// <summary>
@@ -25,33 +23,33 @@ namespace Connectors.AI.PaLM.Skills
         /// </summary>
         /// <param name="model">Model to use</param>
         /// <param name="apiKey">PaLM API Key</param>
+        /// <param name="endpoint">PaLM API endpoint</param>
         /// <param name="httpClient">instance of http client if already exist</param>
-        public TokenSkill(string model, string apiKey, HttpClient? httpClient = null)
+        public TokenSkill(string model, string apiKey, string? endpoint=null, HttpClient? httpClient = null)
         {
             Verify.NotNullOrWhiteSpace(model);
             Verify.NotNullOrWhiteSpace(apiKey);
 
             this._model = model;
             this._apiKey = apiKey;
+            this._endpoint = endpoint ?? this._endpoint;
             this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-            this._disposeHttpClient = false; // Disposal is unnecessary as we either use a non-disposable handler or utilize a custom HTTP client that we should not dispose.
         }
         /// <summary>
-        /// count token from text.
+        /// count tokens from text.
         /// </summary>
         /// <example>
         /// SKContext["input"] = "hello world"
         /// {{token.countToken $input}} => 2
         /// </example>
         /// <param name="input"> The string to count. </param>
+        /// <param name="cancellationToken"> cancellation token. </param>
         /// <returns> The token count. </returns>
         [SKFunction, Description("count token from text.")]
-        public async Task<int> CountToken(string input)
+        public async Task<int> CountTokens(string input, CancellationToken cancellationToken = default)
         {
             try
             {
-                CancellationTokenSource cts = new CancellationTokenSource();
-                var cancellationToken = cts.Token;
                 var tokenRequest = new TokenRequest();
                 tokenRequest.Prompt.Messages.Add(new MessageToken() { Content = input });
 
@@ -71,7 +69,7 @@ namespace Connectors.AI.PaLM.Skills
 
                 return tokenResp.TokenCount;
             }
-            catch (Exception e) when (e is not AIException && !e.IsCriticalException())
+            catch (Exception e) when (!e.IsCriticalException())
             {
                 throw new AIException(
                     AIException.ErrorCodes.UnknownError,

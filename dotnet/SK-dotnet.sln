@@ -150,8 +150,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NCalcSkills", "samples\NCal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Connectors.AI.PaLM", "src\Connectors\Connectors.AI.PaLM\Connectors.AI.PaLM.csproj", "{ED20CDD7-9315-4E1F-B2AF-833CF4D33120}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestPalmApi", "..\samples\dotnet\TestPalmApi\TestPalmApi.csproj", "{3F511D86-4C58-43A5-8270-0B1E8BC6C2FE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -377,12 +375,6 @@ Global
 		{ED20CDD7-9315-4E1F-B2AF-833CF4D33120}.Publish|Any CPU.Build.0 = Debug|Any CPU
 		{ED20CDD7-9315-4E1F-B2AF-833CF4D33120}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ED20CDD7-9315-4E1F-B2AF-833CF4D33120}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3F511D86-4C58-43A5-8270-0B1E8BC6C2FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F511D86-4C58-43A5-8270-0B1E8BC6C2FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3F511D86-4C58-43A5-8270-0B1E8BC6C2FE}.Publish|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F511D86-4C58-43A5-8270-0B1E8BC6C2FE}.Publish|Any CPU.Build.0 = Debug|Any CPU
-		{3F511D86-4C58-43A5-8270-0B1E8BC6C2FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3F511D86-4C58-43A5-8270-0B1E8BC6C2FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -437,7 +429,6 @@ Global
 		{0D0C4DAD-E6BC-4504-AE3A-EEA4E35920C1} = {9ECD1AA0-75B3-4E25-B0B5-9F0945B64974}
 		{E6EDAB8F-3406-4DBF-9AAB-DF40DC2CA0FA} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 		{ED20CDD7-9315-4E1F-B2AF-833CF4D33120} = {0247C2C9-86C3-45BA-8873-28B0948EDC0C}
-		{3F511D86-4C58-43A5-8270-0B1E8BC6C2FE} = {FA3720F1-C99A-49B2-9577-A940257098BF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FBDC56A3-86AD-4323-AA0F-201E59123B83}
