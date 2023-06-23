@@ -8,7 +8,8 @@ namespace LLamaExample;
 
 internal class Program
 {
-    const string ModelPath = "C:\\Experiment\\bot\\BotSharp\\model\\wizardLM-7B.ggmlv3.q4_0.bin"; //model-path, download from here: https://huggingface.co/TheBloke/wizardLM-7B-GGML/tree/main
+    //model-path, download from here: https://huggingface.co/TheBloke/wizardLM-7B-GGML/tree/main
+    const string ModelPath = "C:\\Experiment\\bot\\BotSharp\\model\\wizardLM-7B.ggmlv3.q4_0.bin"; 
     static async Task Main(string[] args)
     {
         //run text completion
@@ -17,8 +18,6 @@ internal class Program
         Console.ReadLine();
     }
 
-    
-    
     public static async Task RunQaAsync()
     {
         Console.WriteLine("======== LLama QA AI ========");
@@ -30,7 +29,6 @@ internal class Program
             .Build();
 
         const string FunctionDefinition = "{{$history}} Question: {{$input}}; Answer:";
-
 
         var questionAnswerFunction = kernel.CreateSemanticFunction(FunctionDefinition);
         while (true)
@@ -58,15 +56,7 @@ internal class Program
                 Console.WriteLine("try another question..");
             }
 
-            /*
-            foreach (var modelResult in result.ModelResults)
-            {
-                var resp = modelResult.GetLLamaResult();
-                Console.WriteLine(resp.AsJson());
-            }*/
-            
         }
-
 
         string GetHistory()
         {
@@ -80,6 +70,9 @@ internal class Program
     }
 }
 
+/// <summary>
+/// class for chat item
+/// </summary>
 public class Chat
 {
     public string Question { get; set; }

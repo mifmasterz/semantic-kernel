@@ -2,9 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using LLama.Common;
@@ -18,42 +16,25 @@ namespace Microsoft.SemanticKernel.Connectors.AI.LLama.TextCompletion;
 /// <summary>
 /// LLama text completion service.
 /// </summary>
-public sealed class LLamaTextCompletion : ITextCompletion, IDisposable
+public sealed class LLamaTextCompletion : ITextCompletion
 {
-    /*
-     modelPath, contextSize: 1024, seed: 1337, gpuLayerCount: 5)
-     */
     private readonly string _modelPath;
     private readonly int _contextSize = 1024;
     private readonly int _seed = 1337;
     private readonly int _gpuLayerCount =5;
     List<string> _antiPrompts { set; get; }
-    CompleteRequestSettings currentSetting { set; get; } 
+    CompleteRequestSettings _currentSetting { set; get; } 
     //ChatSession session { set; get; }
-    InteractiveExecutor ex { set; get; }
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LLamaTextCompletion"/> class.
-    /// </summary>
-    /// <param name="endpoint">Endpoint for service API call.</param>
-    /// <param name="model">Model to use for service API call.</param>
-    /// <param name="httpClientHandler">Instance of <see cref="HttpClientHandler"/> to setup specific scenarios.</param>
-    [Obsolete("This constructor is deprecated and will be removed in one of the next SK SDK versions. Please use one of the alternative constructors.")]
-    public LLamaTextCompletion(string modelPath)
-    {
-        Verify.NotNullOrWhiteSpace(modelPath);
-        this._antiPrompts = null;
-        this._modelPath = modelPath;
-        // Initialize a chat session
-        ex = new InteractiveExecutor(new LLamaModel(new ModelParams(this._modelPath, contextSize: this._contextSize, seed: this._seed, gpuLayerCount: this._gpuLayerCount)));
-        //this.session = new ChatSession(ex);
-    }
+    InteractiveExecutor _interactiveExecutor { set; get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LLamaTextCompletion"/> class.
-    /// Using default <see cref="HttpClientHandler"/> implementation.
     /// </summary>
-    /// <param name="endpoint">Endpoint for service API call.</param>
-    /// <param name="model">Model to use for service API call.</param>
+    /// <param name="modelPath">model path in disk</param>
+    /// <param name="contextSize">context size of model</param>
+    /// <param name="seed">seed number</param>
+    /// <param name="gpuLayerCount">number of gpu layer</param>
+    /// <param name="antiPrompts">text for anti prompt</param>
     public LLamaTextCompletion(string modelPath, int contextSize, int seed,int gpuLayerCount, List<string> antiPrompts)
     {
         Verify.NotNullOrWhiteSpace(modelPath);
@@ -62,12 +43,10 @@ public sealed class LLamaTextCompletion : ITextCompletion, IDisposable
         this._contextSize = contextSize;
         this._seed = seed;
         this._gpuLayerCount = gpuLayerCount;
-        // Initialize a chat session
-        ex = new InteractiveExecutor(new LLamaModel(new ModelParams(this._modelPath, contextSize: this._contextSize, seed: this._seed, gpuLayerCount: this._gpuLayerCount)));
-        //this.session = new ChatSession(ex);
-    }
 
- 
+        _interactiveExecutor = new InteractiveExecutor(new LLamaModel(new ModelParams(this._modelPath, contextSize: this._contextSize, seed: this._seed, gpuLayerCount: this._gpuLayerCount)));
+       
+    }
 
     /// <inheritdoc/>
     public async IAsyncEnumerable<ITextStreamingResult> GetStreamingCompletionsAsync(
@@ -87,16 +66,11 @@ public sealed class LLamaTextCompletion : ITextCompletion, IDisposable
         CompleteRequestSettings requestSettings,
         CancellationToken cancellationToken = default)
     {
-        this.currentSetting = requestSettings;
+        this._currentSetting = requestSettings;
         return await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc/>
-    [Obsolete("This method is deprecated and will be removed in one of the next SK SDK versions.")]
-    public void Dispose()
-    {
-       
-    }
+   
 
     #region private ================================================================================
 
@@ -109,16 +83,11 @@ public sealed class LLamaTextCompletion : ITextCompletion, IDisposable
                 Input = text
             };
             var content = string.Empty;
-            await foreach (var output in ex.InferAsync(completionRequest.Input, new InferenceParams() { Temperature = (float)currentSetting?.Temperature, AntiPrompts = _antiPrompts }))
+            await foreach (var output in _interactiveExecutor.InferAsync(completionRequest.Input, new InferenceParams() { Temperature = (float)_currentSetting?.Temperature, AntiPrompts = _antiPrompts }))
             {
                 content += output;
             }
-            /*
-            foreach (var output in session.Chat(completionRequest.Input, new InferenceParams() { Temperature = (float)currentSetting?.Temperature, AntiPrompts = _antiPrompts }))
-            {
-                content += output;
-            }*/
-
+           
             List<TextCompletionResponse>? completionResponse = new List<TextCompletionResponse>() { new TextCompletionResponse() { Text = content } };
 
             if (completionResponse is null)
@@ -131,7 +100,7 @@ public sealed class LLamaTextCompletion : ITextCompletion, IDisposable
 
             return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c));
         }
-        catch (Exception e) when (e is not AIException && !e.IsCriticalException())
+        catch (Exception e) when (!e.IsCriticalException())
         {
             throw new AIException(
                 AIException.ErrorCodes.UnknownError,
