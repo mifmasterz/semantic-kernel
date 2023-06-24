@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <!-- THIS PROPERTY GROUP MUST COME FIRST -->
+    <AssemblyName>Microsoft.SemanticKernel.Connectors.AI.LLama</AssemblyName>
+    <RootNamespace>$(AssemblyName)</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <!-- IMPORT NUGET PACKAGE SHARED PROPERTIES -->
