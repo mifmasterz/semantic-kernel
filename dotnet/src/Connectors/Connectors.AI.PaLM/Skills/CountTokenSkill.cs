@@ -7,6 +7,7 @@ using Microsoft.SemanticKernel.Diagnostics;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace Connectors.AI.PaLM.Skills
 {
@@ -23,9 +24,9 @@ namespace Connectors.AI.PaLM.Skills
         /// </summary>
         /// <param name="model">Model to use</param>
         /// <param name="apiKey">PaLM API Key</param>
-        /// <param name="endpoint">PaLM API endpoint</param>
         /// <param name="httpClient">instance of http client if already exist</param>
-        public TokenSkill(string model, string apiKey, string? endpoint=null, HttpClient? httpClient = null)
+        /// <param name="endpoint">PaLM API endpoint</param>
+        public TokenSkill(string model, string apiKey, HttpClient? httpClient = null,string? endpoint = null)
         {
             Verify.NotNullOrWhiteSpace(model);
             Verify.NotNullOrWhiteSpace(apiKey);
@@ -99,15 +100,8 @@ namespace Connectors.AI.PaLM.Skills
             {
                 throw new AIException(AIException.ErrorCodes.InvalidConfiguration, "No endpoint or HTTP client base address has been provided");
             }
-            var url = string.Empty;
-            if (!string.IsNullOrEmpty(this._apiKey))
-            {
-                url = $"{baseUrl!.TrimEnd('/')}/{this._model}:countMessageTokens?key={this._apiKey}";
-            }
-            else
-            {
-                url = $"{baseUrl!.TrimEnd('/')}/{this._model}:countMessageTokens";
-            }
+            var url = $"{baseUrl!.TrimEnd('/')}/{this._model}:countMessageTokens?key={this._apiKey}";
+           
             return new Uri(url);
         }
     }

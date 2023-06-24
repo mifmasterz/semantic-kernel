@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.SemanticKernel.Connectors.AI.PaLM.TextCompletion;
 /// <summary>
-/// collection of filter that triggers error
+/// Collection of filter that triggers error
 /// </summary>
 public class TextCompletionError
 {
@@ -16,7 +16,7 @@ public class TextCompletionError
 }
 
 /// <summary>
-/// reason for error (not returning response)
+/// Reason for error (not returning response)
 /// </summary>
 public class Filter
 {

@@ -48,8 +48,7 @@ public static class PaLMKernelBuilderExtensions
     /// Registers an PaLM text embedding generation service with the specified configuration.
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance.</param>
-    /// <param name="model">The name of the PaLM model.</param>
-    /// <param name="endpoint">The endpoint for the text embedding generation service.</param>
+    /// <param name="model">The name of the PaLM model.</param>    
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The <see cref="KernelBuilder"/> instance.</returns>
     public static KernelBuilder WithPaLMTextEmbeddingGenerationService(this KernelBuilder builder,

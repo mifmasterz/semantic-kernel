@@ -14,7 +14,6 @@ public sealed class TextCompletionRequest
     ///// <summary>
     ///// Prompt to complete.
     ///// </summary>
-
     [JsonPropertyName("prompt")]
     public Prompt Prompt { get; set; } = new();
     [JsonPropertyName("temperature")]
@@ -31,6 +30,9 @@ public sealed class TextCompletionRequest
     public string[] StopSequences { get; set; } = Array.Empty<string>();
 }
 
+/// <summary>
+/// Text prompt
+/// </summary>
 public class Prompt
 {
     [JsonPropertyName("text")]

@@ -26,8 +26,6 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration
     private readonly bool _disposeHttpClient = true;
     private readonly string? _apiKey;
 
-
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PaLMTextEmbeddingGeneration"/> class.
     /// Using default <see cref="HttpClientHandler"/> implementation.
@@ -40,6 +38,7 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration
     {
         Verify.NotNull(endpoint);
         Verify.NotNullOrWhiteSpace(model);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         this._endpoint = endpoint.AbsoluteUri;
         this._model = model;
@@ -56,10 +55,9 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration
     public PaLMTextEmbeddingGeneration(string model, string apiKey)
     {
         Verify.NotNullOrWhiteSpace(model);
-        //Verify.NotNullOrWhiteSpace(endpoint);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         this._model = model;
-        //this._endpoint = endpoint;
         this._apiKey = apiKey;
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._disposeHttpClient = false; // Disposal is unnecessary as we either use a non-disposable handler or utilize a custom HTTP client that we should not dispose.
@@ -74,6 +72,7 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration
     public PaLMTextEmbeddingGeneration(string model, HttpClient httpClient, string? apiKey, string? endpoint = null)
     {
         Verify.NotNullOrWhiteSpace(model);
+        Verify.NotNullOrWhiteSpace(apiKey);
         Verify.NotNull(httpClient);
 
         this._model = model;
@@ -95,8 +94,6 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration
     {
         return await this.ExecuteEmbeddingRequestAsync(data, cancellationToken).ConfigureAwait(false);
     }
-
-    
 
     #region private ================================================================================
 
@@ -162,17 +159,10 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration
         {
             throw new AIException(AIException.ErrorCodes.InvalidConfiguration, "No endpoint or HTTP client base address has been provided");
         }
-        var url = string.Empty;
-        if (!string.IsNullOrEmpty(this._apiKey))
-        {
-            url = $"{baseUrl!.TrimEnd('/')}/{this._model}:embedText?key={this._apiKey}";
-        }
-        else
-        {
-            url = $"{baseUrl!.TrimEnd('/')}/{this._model}:embedText";
-        }
+
+        var url  = $"{baseUrl!.TrimEnd('/')}/{this._model}:embedText?key={this._apiKey}";
+
         return new Uri(url);
-        //return new Uri($"{baseUrl!.TrimEnd('/')}/{this._model}");
     }
 
 

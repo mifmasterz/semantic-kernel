@@ -25,7 +25,6 @@ public sealed class PaLMTextCompletion : ITextCompletion
     private readonly string _model = "text-bison-001";
     private readonly string? _endpoint;
     private readonly HttpClient _httpClient;
-    private readonly bool _disposeHttpClient = true;
     private readonly string? _apiKey;
 
     /// <summary>
@@ -43,7 +42,6 @@ public sealed class PaLMTextCompletion : ITextCompletion
         this._model = model;
 
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._disposeHttpClient = false; // Disposal is unnecessary as a non-disposable handler is used.
     }
 
     /// <summary>
@@ -58,12 +56,12 @@ public sealed class PaLMTextCompletion : ITextCompletion
     public PaLMTextCompletion(string model, string? apiKey = null, HttpClient? httpClient = null, string? endpoint = null)
     {
         Verify.NotNullOrWhiteSpace(model);
+        Verify.NotNullOrWhiteSpace(apiKey);
 
         this._model = model;
         this._apiKey = apiKey;
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
         this._endpoint = endpoint;
-        this._disposeHttpClient = false; // Disposal is unnecessary as we either use a non-disposable handler or utilize a custom HTTP client that we should not dispose.
     }
 
     /// <inheritdoc/>
@@ -124,7 +122,11 @@ public sealed class PaLMTextCompletion : ITextCompletion
             if (completionResponse.Candidates is null)
             {
                 var errorResponse = JsonSerializer.Deserialize<TextCompletionError>(body);
-                completionResponse = new TextCompletionResponse() { Candidates = new Candidate[] { new Candidate() { Output = $"response is null, reason: {errorResponse?.Filters.First()?.Reason}, please try another input." } } };
+                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Unexpected response from model")
+                {
+                    Data = { { "Reason", errorResponse?.Filters.First()?.Reason } }
+                };
+               
             }
 
             //return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c));
@@ -156,15 +158,9 @@ public sealed class PaLMTextCompletion : ITextCompletion
         {
             baseUrl = this._httpClient.BaseAddress!.AbsoluteUri;
         }
-        var url = string.Empty;
-        if (!string.IsNullOrEmpty(this._apiKey))
-        {
-            url = $"{baseUrl!.TrimEnd('/')}/{this._model}:generateText?key={this._apiKey}";
-        }
-        else
-        {
-            url = $"{baseUrl!.TrimEnd('/')}/{this._model}:generateText";
-        }
+
+        var url = $"{baseUrl!.TrimEnd('/')}/{this._model}:generateText?key={this._apiKey}";
+
         return new Uri(url);
     }
 
