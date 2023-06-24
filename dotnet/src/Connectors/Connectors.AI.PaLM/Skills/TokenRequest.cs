@@ -10,7 +10,7 @@ namespace Connectors.AI.PaLM.Skills;
 public class MessageToken
 {
     [JsonPropertyName("content")]
-    public string Content { get; set; }
+    public string? Content { get; set; }
 }
 /// <summary>
 /// contain collection of text for token counting

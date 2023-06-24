@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
-using Microsoft.SemanticKernel.Connectors.AI.PaLM.TextCompletion;
+using Connectors.AI.PaLM.TextCompletion;
 using Microsoft.SemanticKernel.Orchestration;
 
 #pragma warning disable IDE0130

@@ -33,6 +33,7 @@ public sealed class TextCompletionRequest
 /// <summary>
 /// Text prompt
 /// </summary>
+[Serializable]
 public class Prompt
 {
     [JsonPropertyName("text")]

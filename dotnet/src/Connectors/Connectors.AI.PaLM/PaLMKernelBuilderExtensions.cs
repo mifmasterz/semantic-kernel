@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Net.Http;
+using Connectors.AI.PaLM.TextEmbedding;
 using Microsoft.SemanticKernel.AI.Embeddings;
 using Microsoft.SemanticKernel.AI.TextCompletion;
 using Microsoft.SemanticKernel.Connectors.AI.PaLM.TextCompletion;
-using Microsoft.SemanticKernel.Connectors.AI.PaLM.TextEmbedding;
 
 #pragma warning disable IDE0130
 // ReSharper disable once CheckNamespace - Using NS of KernelConfig
@@ -31,7 +31,7 @@ public static class PaLMKernelBuilderExtensions
         string model,
         string? apiKey = null,
         string? endpoint = null,
-        string? serviceId = null,   
+        string? serviceId = null,
         HttpClient? httpClient = null)
     {
         builder.WithAIService<ITextCompletion>(serviceId, (parameters) =>
@@ -43,23 +43,24 @@ public static class PaLMKernelBuilderExtensions
 
         return builder;
     }
-    
+
     /// <summary>
     /// Registers an PaLM text embedding generation service with the specified configuration.
     /// </summary>
     /// <param name="builder">The <see cref="KernelBuilder"/> instance.</param>
-    /// <param name="model">The name of the PaLM model.</param>    
+    /// <param name="model">The name of the PaLM model.</param>
+    /// <param name="apiKey">API Key for PaLM.</param>
     /// <param name="serviceId">A local identifier for the given AI service.</param>
     /// <returns>The <see cref="KernelBuilder"/> instance.</returns>
     public static KernelBuilder WithPaLMTextEmbeddingGenerationService(this KernelBuilder builder,
-        string model,        
+        string model,
         string apiKey,
         string? serviceId = null)
     {
         builder.WithAIService<ITextEmbeddingGeneration>(serviceId, (parameters) =>
             new PaLMTextEmbeddingGeneration(
                 model,
-                apiKey:apiKey));
+                apiKey: apiKey));
 
         return builder;
     }

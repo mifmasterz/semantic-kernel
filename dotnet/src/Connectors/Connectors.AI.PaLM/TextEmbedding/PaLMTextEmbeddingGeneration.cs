@@ -2,16 +2,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel.AI;
 using Microsoft.SemanticKernel.AI.Embeddings;
+using Microsoft.SemanticKernel.Connectors.AI.PaLM.TextEmbedding;
 using Microsoft.SemanticKernel.Diagnostics;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.PaLM.TextEmbedding;
+namespace Connectors.AI.PaLM.TextEmbedding;
 
 /// <summary>
 /// PaLM embedding generation service.
@@ -21,9 +21,8 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration
     private const string HttpUserAgent = "Microsoft-Semantic-Kernel";
 
     private readonly string _model = "embedding-gecko-001";
-    private readonly string? _endpoint= "https://generativelanguage.googleapis.com/v1beta2/models";
+    private readonly string? _endpoint = "https://generativelanguage.googleapis.com/v1beta2/models";
     private readonly HttpClient _httpClient;
-    private readonly bool _disposeHttpClient = true;
     private readonly string? _apiKey;
 
     /// <summary>
@@ -44,14 +43,13 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration
         this._model = model;
         this._apiKey = apiKey;
         this._httpClient = httpClient ?? new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._disposeHttpClient = false; // Disposal is unnecessary as we either use a non-disposable handler or utilize a custom HTTP client that we should not dispose.
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PaLMTextEmbeddingGeneration"/> class.
     /// </summary>
     /// <param name="model">Model to use for service API call.</param>
-    /// <param name="endpoint">Endpoint for service API call.</param>
+    /// <param name="apiKey">API Key for PaLM.</param>
     public PaLMTextEmbeddingGeneration(string model, string apiKey)
     {
         Verify.NotNullOrWhiteSpace(model);
@@ -60,7 +58,6 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration
         this._model = model;
         this._apiKey = apiKey;
         this._httpClient = new HttpClient(NonDisposableHttpClientHandler.Instance, disposeHandler: false);
-        this._disposeHttpClient = false; // Disposal is unnecessary as we either use a non-disposable handler or utilize a custom HTTP client that we should not dispose.
     }
 
     /// <summary>
@@ -68,6 +65,7 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration
     /// </summary>
     /// <param name="model">Model to use for service API call.</param>
     /// <param name="httpClient">The HttpClient used for making HTTP requests.</param>
+    /// <param name="apiKey">API Key for PaLM.</param>
     /// <param name="endpoint">Endpoint for service API call. If not specified, the base address of the HTTP client is used.</param>
     public PaLMTextEmbeddingGeneration(string model, HttpClient httpClient, string? apiKey, string? endpoint = null)
     {
@@ -85,8 +83,6 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration
                 AIException.ErrorCodes.InvalidConfiguration,
                 "The HttpClient BaseAddress and endpoint are both null or empty. Please ensure at least one is provided.");
         }
-
-        this._disposeHttpClient = false; // We should not dispose custom HTTP clients.
     }
 
     /// <inheritdoc/>
@@ -160,13 +156,10 @@ public sealed class PaLMTextEmbeddingGeneration : ITextEmbeddingGeneration
             throw new AIException(AIException.ErrorCodes.InvalidConfiguration, "No endpoint or HTTP client base address has been provided");
         }
 
-        var url  = $"{baseUrl!.TrimEnd('/')}/{this._model}:embedText?key={this._apiKey}";
+        var url = $"{baseUrl!.TrimEnd('/')}/{this._model}:embedText?key={this._apiKey}";
 
         return new Uri(url);
     }
-
-
-
 
     #endregion
 }

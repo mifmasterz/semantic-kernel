@@ -1,16 +1,15 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
-namespace Microsoft.SemanticKernel.Connectors.AI.PaLM.TextEmbedding;
+namespace Connectors.AI.PaLM.TextEmbedding;
 
 /// <summary>
 /// embedding values in float 
 /// </summary>
 public class Embedding
 {
-    public List<float> value { get; set; }
+    public List<float>? value { get; set; }
 }
 
 /// <summary>
@@ -18,5 +17,5 @@ public class Embedding
 /// </summary>
 public sealed class TextEmbeddingResponse
 {
-    public Embedding embedding { get; set; }
+    public Embedding? embedding { get; set; }
 }
