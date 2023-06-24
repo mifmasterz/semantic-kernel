@@ -14,7 +14,6 @@ namespace Microsoft.SemanticKernel;
 /// </summary>
 public static class LLamaKernelBuilderExtensions
 {
-
     /// <summary>
     /// Registers an LLama text completion service with the specified configuration.
     /// </summary>
@@ -43,5 +42,4 @@ public static class LLamaKernelBuilderExtensions
 
         return builder;
     }
-    
 }

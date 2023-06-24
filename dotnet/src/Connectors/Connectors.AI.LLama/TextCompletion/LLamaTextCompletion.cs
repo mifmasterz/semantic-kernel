@@ -21,11 +21,13 @@ public sealed class LLamaTextCompletion : ITextCompletion
     private readonly string _modelPath;
     private readonly int _contextSize = 1024;
     private readonly int _seed = 1337;
-    private readonly int _gpuLayerCount =5;
-    List<string> _antiPrompts { set; get; }
-    CompleteRequestSettings _currentSetting { set; get; } 
+    private readonly int _gpuLayerCount = 5;
+
+    private List<string> _antiPrompts { set; get; }
+    private CompleteRequestSettings _currentSetting { set; get; }
+
     //ChatSession session { set; get; }
-    InteractiveExecutor _interactiveExecutor { set; get; }
+    private InteractiveExecutor _interactiveExecutor { set; get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="LLamaTextCompletion"/> class.
@@ -35,7 +37,7 @@ public sealed class LLamaTextCompletion : ITextCompletion
     /// <param name="seed">seed number</param>
     /// <param name="gpuLayerCount">number of gpu layer</param>
     /// <param name="antiPrompts">text for anti prompt</param>
-    public LLamaTextCompletion(string modelPath, int contextSize, int seed,int gpuLayerCount, List<string> antiPrompts)
+    public LLamaTextCompletion(string modelPath, int contextSize, int seed, int gpuLayerCount, List<string> antiPrompts)
     {
         Verify.NotNullOrWhiteSpace(modelPath);
         this._antiPrompts = antiPrompts;
@@ -44,8 +46,7 @@ public sealed class LLamaTextCompletion : ITextCompletion
         this._seed = seed;
         this._gpuLayerCount = gpuLayerCount;
 
-        _interactiveExecutor = new InteractiveExecutor(new LLamaModel(new ModelParams(this._modelPath, contextSize: this._contextSize, seed: this._seed, gpuLayerCount: this._gpuLayerCount)));
-       
+        this._interactiveExecutor = new InteractiveExecutor(new LLamaModel(new ModelParams(this._modelPath, contextSize: this._contextSize, seed: this._seed, gpuLayerCount: this._gpuLayerCount)));
     }
 
     /// <inheritdoc/>
@@ -70,8 +71,6 @@ public sealed class LLamaTextCompletion : ITextCompletion
         return await this.ExecuteGetCompletionsAsync(text, cancellationToken).ConfigureAwait(false);
     }
 
-   
-
     #region private ================================================================================
 
     private async Task<IReadOnlyList<ITextStreamingResult>> ExecuteGetCompletionsAsync(string text, CancellationToken cancellationToken = default)
@@ -83,20 +82,12 @@ public sealed class LLamaTextCompletion : ITextCompletion
                 Input = text
             };
             var content = string.Empty;
-            await foreach (var output in _interactiveExecutor.InferAsync(completionRequest.Input, new InferenceParams() { Temperature = (float)_currentSetting?.Temperature, AntiPrompts = _antiPrompts }))
+            await foreach (var output in this._interactiveExecutor.InferAsync(completionRequest.Input, new InferenceParams() { Temperature = (float)this._currentSetting?.Temperature, AntiPrompts = _antiPrompts }))
             {
                 content += output;
             }
-           
-            List<TextCompletionResponse>? completionResponse = new List<TextCompletionResponse>() { new TextCompletionResponse() { Text = content } };
 
-            if (completionResponse is null)
-            {
-                throw new AIException(AIException.ErrorCodes.InvalidResponseContent, "Unexpected response from model")
-                {
-                    Data = { { "ResponseData", content } },
-                };
-            }
+            List<TextCompletionResponse>? completionResponse = new() { new TextCompletionResponse() { Text = content } };
 
             return completionResponse.ConvertAll(c => new TextCompletionStreamingResult(c));
         }
@@ -107,8 +98,6 @@ public sealed class LLamaTextCompletion : ITextCompletion
                 $"Something went wrong: {e.Message}", e);
         }
     }
-
-    
 
     #endregion
 }
