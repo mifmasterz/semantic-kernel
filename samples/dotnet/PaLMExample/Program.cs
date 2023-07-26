@@ -9,12 +9,12 @@ namespace PaLMExample;
 
 internal class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
-        RunAsync();
+        await RunAsync();
         Console.ReadLine();
     }
-    private const string PALM_API_KEY = "AIzaSyBckgGXO_DcMSmoRnE7UHGTKvfO7GuDU_8";// [PUT YOUR PALM API KEY HERE]";
+    private const string PALM_API_KEY = "[PUT YOUR PALM API KEY HERE]";
     private const string Model = "text-bison-001";
     private const string ModelEmbedding = "embedding-gecko-001";
     private const string ModelToken = "chat-bison-001";
