@@ -1,12 +1,12 @@
 ﻿// Copyright (c) Microsoft. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel.Memory;
 using Microsoft.SemanticKernel.Orchestration;
-using Microsoft.SemanticKernel.Security;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Microsoft.SemanticKernel.Services;
 using Microsoft.SemanticKernel.SkillDefinition;
@@ -45,23 +45,14 @@ public interface IKernel
     IReadOnlySkillCollection Skills { get; }
 
     /// <summary>
-    /// Default service for trust check events in case a specific one is not provided at function creation.
-    /// Functions directly created through the kernel will use this trust service if no other is provided.
-    /// If null, the created functions will rely on the TrustService.DefaultTrusted implementation.
-    /// </summary>
-    ITrustService? TrustServiceInstance { get; }
-
-    /// <summary>
     /// Build and register a function in the internal skill collection, in a global generic skill.
     /// </summary>
     /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
     /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
-    /// <param name="trustService">Service used for trust checks (if null will use the default registered in the kernel).</param>
     /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
     ISKFunction RegisterSemanticFunction(
         string functionName,
-        SemanticFunctionConfig functionConfig,
-        ITrustService? trustService = null);
+        SemanticFunctionConfig functionConfig);
 
     /// <summary>
     /// Build and register a function in the internal skill collection.
@@ -69,13 +60,11 @@ public interface IKernel
     /// <param name="skillName">Name of the skill containing the function. The name can contain only alphanumeric chars + underscore.</param>
     /// <param name="functionName">Name of the semantic function. The name can contain only alphanumeric chars + underscore.</param>
     /// <param name="functionConfig">Function configuration, e.g. I/O params, AI settings, localization details, etc.</param>
-    /// <param name="trustService">Service used for trust checks (if null will use the default registered in the kernel).</param>
     /// <returns>A C# function wrapping AI logic, usually defined with natural language</returns>
     ISKFunction RegisterSemanticFunction(
         string skillName,
         string functionName,
-        SemanticFunctionConfig functionConfig,
-        ITrustService? trustService = null);
+        SemanticFunctionConfig functionConfig);
 
     /// <summary>
     /// Registers a custom function in the internal skill collection.
@@ -90,15 +79,24 @@ public interface IKernel
     /// </summary>
     /// <param name="skillInstance">Instance of a class containing functions</param>
     /// <param name="skillName">Name of the skill for skill collection and prompt templates. If the value is empty functions are registered in the global namespace.</param>
-    /// <param name="trustService">Service used for trust checks (if null will use the default registered in the kernel).</param>
     /// <returns>A list of all the semantic functions found in the directory, indexed by function name.</returns>
-    IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? skillName = null, ITrustService? trustService = null);
+    IDictionary<string, ISKFunction> ImportSkill(object skillInstance, string? skillName = null);
 
     /// <summary>
     /// Set the semantic memory to use
     /// </summary>
     /// <param name="memory">Semantic memory instance</param>
     void RegisterMemory(ISemanticTextMemory memory);
+
+    /// <summary>
+    /// Run a single synchronous or asynchronous <see cref="ISKFunction"/>.
+    /// </summary>
+    /// <param name="skFunction">A Semantic Kernel function to run</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to monitor for cancellation requests. The default is <see cref="CancellationToken.None"/>.</param>
+    /// <returns>Result of the function composition</returns>
+    Task<SKContext> RunAsync(
+        ISKFunction skFunction,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Run a pipeline composed of synchronous and asynchronous functions.
@@ -174,9 +172,16 @@ public interface IKernel
     /// <summary>
     /// Create a new instance of a context, linked to the kernel internal state.
     /// </summary>
+    /// <returns>SK context</returns>
+    SKContext CreateNewContext();
+
+    /// <summary>
+    /// Create a new instance of a context, linked to the kernel internal state.
+    /// </summary>
     /// <param name="cancellationToken">Optional cancellation token for operations in context.</param>
     /// <returns>SK context</returns>
-    SKContext CreateNewContext(CancellationToken cancellationToken = default);
+    [Obsolete("SKContext no longer contains the CancellationToken. Use CreateNewContext().")]
+    SKContext CreateNewContext(CancellationToken cancellationToken);
 
     /// <summary>
     /// Get one of the configured services. Currently limited to AI services.
